@@ -16,8 +16,8 @@ require "json"
 INPUT_FILE  = ARGV[0] || File.join(__dir__, "models.json")
 OUTPUT_FILE = ARGV[1] || File.join(__dir__, "opencode.json")
 
-PROVIDER_ID   = "requesty"
-PROVIDER_NAME = "Requesty"
+PROVIDER_ID   = "requesty-extra"
+PROVIDER_NAME = "Requesty-Extra"
 PROVIDER_NPM  = "@ai-sdk/openai-compatible"
 BASE_URL      = "https://router.requesty.ai/v1"
 
@@ -131,7 +131,8 @@ config = {
       "npm"    => PROVIDER_NPM,
       "name"   => PROVIDER_NAME,
       "options" => {
-        "baseURL" => BASE_URL
+        "baseURL" => BASE_URL,
+        "apiKey" => "{env:REQUESTY_API_KEY}"
       },
       "models" => opencode_models
     }
