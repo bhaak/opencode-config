@@ -26,10 +26,10 @@ BASE_URL      = "https://router.requesty.ai/v1"
 # ---------------------------------------------------------------------------
 
 # Prices in models.json are per token (e.g. 1.25e-6 = $1.25/1M tokens).
-# OpenCode cost also expects price-per-token as a number.
+# OpenCode cost expects price per million tokens as a number.
 def price(value)
   return nil if value.nil? || value.zero?
-  value
+  value * 1_000_000
 end
 
 # Generates a human-readable display name from the model ID.
