@@ -59,6 +59,28 @@ def output_modalities(model)
 end
 
 # ---------------------------------------------------------------------------
+# Integration into ~/.config/opencode/opencode.json or ~/.opencode/opencode.json
+# ---------------------------------------------------------------------------
+def integrate_into_config(new_provider_data)
+  possible_paths = [
+    File.expand_path("~/.config/opencode/opencode.json"),
+    File.expand_path("~/.opencode/opencode.json")
+  ]
+
+  config_path = possible_paths.find { |path| File.exist?(path) }
+  return unless config_path
+
+  config = JSON.parse(File.read(config_path))
+  config["provider"] ||= {}
+
+  # Ensure we only update/add the requesty-extra provider
+  config["provider"][PROVIDER_ID] = new_provider_data[PROVIDER_ID]
+
+  File.write(config_path, JSON.pretty_generate(config) + "\n")
+  puts "Updated #{config_path}"
+end
+
+# ---------------------------------------------------------------------------
 # Main logic
 # ---------------------------------------------------------------------------
 
@@ -124,23 +146,28 @@ end
 # Build OpenCode configuration
 # ---------------------------------------------------------------------------
 
+provider_config = {
+  "npm"    => PROVIDER_NPM,
+  "name"   => PROVIDER_NAME,
+  "options" => {
+    "baseURL" => BASE_URL,
+    "apiKey" => "{env:REQUESTY_API_KEY}"
+  },
+  "models" => opencode_models
+}
+
 config = {
   "$schema"  => "https://opencode.ai/config.json",
   "provider" => {
-    PROVIDER_ID => {
-      "npm"    => PROVIDER_NPM,
-      "name"   => PROVIDER_NAME,
-      "options" => {
-        "baseURL" => BASE_URL,
-        "apiKey" => "{env:REQUESTY_API_KEY}"
-      },
-      "models" => opencode_models
-    }
+    PROVIDER_ID => provider_config
   }
 }
 
 json_output = JSON.pretty_generate(config)
 File.write(OUTPUT_FILE, json_output + "\n")
+
+# Integrate into ~/.config/opencode/opencode.json if existing
+integrate_into_config({ PROVIDER_ID => provider_config })
 
 puts "Conversion complete: #{chat_models.size} models -> #{OUTPUT_FILE}"
 puts "Provider: #{PROVIDER_ID} (#{BASE_URL})"
