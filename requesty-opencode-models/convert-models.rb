@@ -35,13 +35,26 @@ end
 # Generates a human-readable display name from the model ID.
 # e.g. "anthropic/claude-sonnet-4-20250514" -> "Claude Sonnet 4 20250514"
 #      "google/gemini-2.5-pro" -> "Gemini 2.5 Pro"
-def humanize_id(id)
+def model_name(model)
+  id = model['id']
   # Strip the provider prefix (everything before the first /)
-  name = id.include?("/") ? id.split("/", 2).last : id
-  # Strip region suffixes like @europe-west4
-  name = name.split("@").first
+  if id.include?("/")
+    provider_prefix, name = id.split("/", 2)
+  else
+    raise "No provider: #{id}"
+  end
+
   # Replace dashes with spaces, title-case
-  name.gsub("-", " ").gsub(/\b([a-z])/) { $1.upcase }
+  name = "#{name} (#{provider_prefix})"
+  name = name.gsub("-", " ").gsub(/\b([a-z])/) { $1.upcase }
+
+  # Fix some name
+  name.gsub!(/^Gpt /, 'GPT ') if name.match(/^Gpt /)
+  name.gsub!('Deepinfra', 'DeepInfra') if name.include?('Deepinfra')
+  name.gsub!('Deepseek', 'DeepSeek') if name.include?('Deepseek')
+  name.gsub!('Openai', 'OpenAI') if name.include?('Openai')
+
+  name
 end
 
 # Determines input modalities based on model flags.
@@ -102,12 +115,7 @@ chat_models.each do |m|
   entry = {}
 
   # Display name
-  if m["description"] && !m["description"].empty? && m["description"] != "N/A"
-    # Use humanized model ID as display name
-    entry["name"] = humanize_id(model_id)
-  else
-    entry["name"] = humanize_id(model_id)
-  end
+  entry["name"] = model_name(m)
 
   # Capability flags
   entry["reasoning"]  = true if m["supports_reasoning"]
