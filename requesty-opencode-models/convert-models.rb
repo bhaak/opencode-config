@@ -150,6 +150,8 @@ chat_models.each do |m|
   opencode_models[model_id] = entry
 end
 
+opencode_models = opencode_models.sort.to_h
+
 # ---------------------------------------------------------------------------
 # Build OpenCode configuration
 # ---------------------------------------------------------------------------
