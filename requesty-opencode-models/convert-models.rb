@@ -94,6 +94,24 @@ def integrate_into_config(new_provider_data)
 end
 
 # ---------------------------------------------------------------------------
+# Download models.json if missing
+# ---------------------------------------------------------------------------
+
+MODELS_URL = "https://router.requesty.ai/v1/models"
+
+unless File.exist?(INPUT_FILE)
+  puts "Downloading models.json from #{MODELS_URL} ..."
+  begin
+    require "open-uri"
+    content = URI.open(MODELS_URL).read
+    File.write(INPUT_FILE, content)
+    puts "Saved to #{INPUT_FILE}"
+  rescue => e
+    abort "Failed to download models.json: #{e.message}"
+  end
+end
+
+# ---------------------------------------------------------------------------
 # Main logic
 # ---------------------------------------------------------------------------
 
