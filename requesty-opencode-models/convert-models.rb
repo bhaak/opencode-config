@@ -16,9 +16,9 @@ require "json"
 INPUT_FILE  = ARGV[0] || File.join(__dir__, "models.json")
 OUTPUT_FILE = ARGV[1] || File.join(__dir__, "opencode.json")
 
-PROVIDER_ID   = "requesty-extra"
+PROVIDER_ID   = "requestyextra"
 PROVIDER_NAME = "Requesty-Extra"
-PROVIDER_NPM  = "@ai-sdk/openai-compatible"
+PROVIDER_PACKAGE = "@opencode/ai/providers/openai-compatible"
 BASE_URL      = "https://router.requesty.ai/v1"
 
 # ---------------------------------------------------------------------------
@@ -84,10 +84,14 @@ def integrate_into_config(new_provider_data)
   return unless config_path
 
   config = JSON.parse(File.read(config_path))
-  config["provider"] ||= {}
+  config["providers"] ||= {}
 
   # Ensure we only update/add the requesty-extra provider
-  config["provider"][PROVIDER_ID] = new_provider_data[PROVIDER_ID]
+  config["providers"][PROVIDER_ID] = new_provider_data[PROVIDER_ID]
+  config["providers"].delete("requesty-extra")
+  config["provider"]&.delete(PROVIDER_ID)
+  config["provider"]&.delete("requesty-extra")
+  config.delete("provider") if config["provider"]&.empty?
 
   File.write(config_path, JSON.pretty_generate(config) + "\n")
   puts "Updated #{config_path}"
@@ -135,17 +139,21 @@ chat_models.each do |m|
   # Display name
   entry["name"] = model_name(m)
 
-  # Capability flags
-  entry["reasoning"]  = true if m["supports_reasoning"]
-  entry["tool_call"]  = true if m["supports_tool_calling"]
-  entry["attachment"]  = true if m["supports_vision"]
+  # Capabilities
+  entry["capabilities"] = {
+    "tools" => !!m["supports_tool_calling"],
+    "input" => input_modalities(m),
+    "output" => output_modalities(m)
+  }
 
   # Cost
   cost = {}
-  cost["input"]       = price(m["input_price"])   if price(m["input_price"])
-  cost["output"]      = price(m["output_price"])  if price(m["output_price"])
-  cost["cache_write"] = price(m["caching_price"]) if price(m["caching_price"])
-  cost["cache_read"]  = price(m["cached_price"])  if price(m["cached_price"])
+  cost["input"]       = price(m["input_price"]) || 0
+  cost["output"]      = price(m["output_price"]) || 0
+  cache = {}
+  cache["write"] = price(m["caching_price"]) if price(m["caching_price"])
+  cache["read"]  = price(m["cached_price"])  if price(m["cached_price"])
+  cost["cache"] = cache unless cache.empty?
   entry["cost"] = cost unless cost.empty?
 
   # Limits
@@ -175,18 +183,18 @@ opencode_models = opencode_models.sort.to_h
 # ---------------------------------------------------------------------------
 
 provider_config = {
-  "npm"    => PROVIDER_NPM,
+  "package" => PROVIDER_PACKAGE,
   "name"   => PROVIDER_NAME,
-  "options" => {
+  "env" => ["REQUESTY_API_KEY"],
+  "settings" => {
     "baseURL" => BASE_URL,
-    "apiKey" => "{env:REQUESTY_API_KEY}"
   },
   "models" => opencode_models
 }
 
 config = {
   "$schema"  => "https://opencode.ai/config.json",
-  "provider" => {
+  "providers" => {
     PROVIDER_ID => provider_config
   }
 }
