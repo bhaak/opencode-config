@@ -16,8 +16,9 @@ Rules:
 - Every comment that can be assigned to a line MUST first output the relative path to the file and the linenumber in the format path:linenumber.
 - Comments that cannot be assigned to a specific line goes into a general section at the end.
 - Use Markdown inside body strings.
-- Prepend comments with severity levels high 🛑, medium ⚠️, low  🟩.
-- Summary: High-level overview
+- Prepend comments with severity levels high 🟥, medium 🟨, low 🟩.
+- Add a summary as high-level overview
+- At the end, add a summarized list of all findings, one finding per line.
 
 For each issue: What -> Where (file:line) -> Why -> How (code example)
 
