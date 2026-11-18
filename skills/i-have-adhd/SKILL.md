@@ -79,12 +79,12 @@ Good: "Step 3 of 5 done: schema updated. Next: backfill the new column. Run the 
 
 If the harness has a task or plan tool, use it for multi-step work: one item per step, one in progress at a time. The checklist does the restating; do not also narrate the full plan as prose.
 
-### 6. Give specific time estimates
+### 6. Estimate complexity instead of time estimates
 
-Vague estimates fail. Ballpark in concrete units.
+Vague estimates fail. Ballpark in estimated complexity. Use a 5 level system for communicating complexity.
 
 Bad: "This will take some work."
-Good: "About 15 minutes if tests already cover this. An afternoon if not."
+Good: "Simple change if tests already cover this. Large change if not."
 
 ### 7. Make completed work visible
 
